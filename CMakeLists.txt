@@ -19,7 +19,7 @@ endif()
 
 add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
-CPMAddPackage("gh:hiimjasmine00/jasmine-tools@1.5.0")
+CPMAddPackage("gh:hiimjasmine00/jasmine-tools@1.6.0")
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 list(REMOVE_ITEM SOURCES
@@ -30,12 +30,5 @@ list(REMOVE_ITEM SOURCES
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME} jasmine-tools)
-
-# Fix for pugi::xml_node destructor issue
-# Suppress the dtor-name warning for implicitly declared destructors in pugixml bindings
-target_compile_options(${PROJECT_NAME} PRIVATE
-    -Wno-dtor-name
-    -Wno-error=dtor-name
-)
 
 setup_geode_mod(${PROJECT_NAME})
