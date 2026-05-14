@@ -1,4 +1,17 @@
 # Fix for Geode bindings xml_node destructor issue
 # This patches the bindings source to remove the problematic destructor definition
 
-sed -i '/pugi::xml_node::~xml_node() {/,/}/d' build/_deps/bindings-src/bindings/2.2081/inline/xml_node.cpp
+FILE="build/_deps/bindings-src/bindings/2.2081/inline/xml_node.cpp"
+if [ -f "$FILE" ]; then
+    python3 "$FILE" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text()
+start = text.find('pugi::xml_node::~xml_node() {')
+if start >= 0:
+    end = text.find('}', start)
+    if end >= 0:
+        path.write_text(text[:start] + text[end+1:])
+PY
+fi
