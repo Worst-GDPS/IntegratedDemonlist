@@ -7,12 +7,7 @@
 
 using namespace geode::prelude;
 
-std::set<int> loadedDemons;
-
 class $modify(IDLevelCell, LevelCell) {
-    struct Fields {
-        TaskHolder<web::WebResponse> m_listener;
-    };
 
     static void onModify(ModifyBase<ModifyDerive<IDLevelCell, LevelCell>>& self) {
         (void)self.setHookPriorityAfterPost("LevelCell::loadFromLevel", "hiimjustin000.level_size");
@@ -29,64 +24,10 @@ class $modify(IDLevelCell, LevelCell) {
 
         auto levelID = level->m_levelID.value();
         std::vector<int> positions;
-        for (auto& demon : platformer ? IntegratedDemonlist::pemonlist : IntegratedDemonlist::aredl) {
+        for (auto& demon : IntegratedDemonlist::demonlist) {
             if (demon.id == levelID) positions.push_back(demon.position);
         }
         if (!positions.empty()) return addRank(positions);
-
-        if (loadedDemons.contains(levelID)) return;
-        loadedDemons.insert(levelID);
-
-        m_fields->m_listener.spawn(
-            web::WebRequest().get(platformer
-                ? fmt::format("https://pemonlist.com/api/level/{}?version=2", levelID)
-                : fmt::format("https://api.aredl.net/v2/api/aredl/levels/{}", levelID)),
-            [this, levelID, levelName = std::string(level->m_levelName), platformer, twoPlayer = level->m_twoPlayerMode](
-                web::WebResponse res
-            ) mutable {
-                if (!res.ok()) return;
-
-                auto json = res.json();
-                if (!json.isOk()) return;
-
-                auto position = json.unwrap().get<int>(platformer ? "placement" : "position");
-                if (!position.isOk()) return;
-
-                auto position1 = position.unwrap();
-                if (platformer && position1 > 150) return;
-
-                IDListDemon demon(levelID, position1, levelName);
-                auto& list = platformer ? IntegratedDemonlist::pemonlist : IntegratedDemonlist::aredl;
-                if (!std::ranges::contains(list, demon)) {
-                    list.push_back(std::move(demon));
-                }
-
-                std::vector<int> positions = { position1 };
-                if (platformer || !twoPlayer) return addRank(positions);
-
-                m_fields->m_listener.spawn(
-                    web::WebRequest().get(fmt::format("https://api.aredl.net/v2/api/aredl/levels/{}_2p", levelID)),
-                    [this, levelID, levelName, positions](web::WebResponse res) mutable {
-                        if (!res.ok()) return addRank(positions);
-
-                        auto json = res.json();
-                        if (!json.isOk()) return addRank(positions);
-
-                        auto position = json.unwrap().get<int>("position");
-                        if (!position.isOk()) return addRank(positions);
-
-                        auto position2 = position.unwrap();
-                        IDListDemon demon(levelID, position2, levelName);
-                        if (!std::ranges::contains(IntegratedDemonlist::aredl, demon)) {
-                            IntegratedDemonlist::aredl.push_back(std::move(demon));
-                        }
-
-                        positions.push_back(position2);
-                        addRank(positions);
-                    }
-                );
-            }
-        );
     }
 
     void addRank(const std::vector<int>& positions) {
@@ -100,8 +41,7 @@ class $modify(IDLevelCell, LevelCell) {
             if (it != positions.begin()) positionsStr.append('/');
             positionsStr.append("#{}", *it);
         }
-        if (m_level->isPlatformer()) positionsStr.append(" Pemonlist");
-        else positionsStr.append(" AREDL");
+        positionsStr.append(" Demonlist");
 
         auto rankTextNode = CCLabelBMFont::create(positionsStr.c_str(), "chatFont.fnt");
         rankTextNode->setPosition({ 346.0f, dailyLevel ? 6.0f : 1.0f });

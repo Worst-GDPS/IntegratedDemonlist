@@ -12,6 +12,10 @@ set(GEODE_DISABLE_PRECOMPILED_HEADERS ON)
 project(IntegratedDemonlist VERSION 1.7.13)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
+list(REMOVE_ITEM SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/classes/IDPackLayer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/classes/IDPackCell.cpp
+)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 

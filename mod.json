@@ -7,10 +7,10 @@
         "ios": "2.2081"
     },
     "version": "v1.7.13",
-    "id": "hiimjustin000.integrated_demonlist",
-    "name": "Integrated Demonlist",
-    "developer": "hiimjasmine00",
-    "description": "Simple AREDL and Pemonlist integration.",
+    "id": "reject.integrated_wordl",
+    "name": "Integrated WorDL",
+    "developer": "reject",
+    "description": "Simple WorDL integration.",
     "resources": {
         "files": [
             "resources/*.frag",
@@ -39,9 +39,8 @@
         "geode.node-ids": ">=v1.9.0"
     },
     "links": {
-        "community": "https://discord.gg/QVKmbvBXA7",
-        "source": "https://github.com/hiimjasmine00/IntegratedDemonlist",
-        "homepage": "https://www.hiimjasmine00.com"
+        "community": "https://discord.gg/xSfaBxGmmp",
+        "homepage": "https:/146.59.93.5/"
     },
     "tags": [
         "content",

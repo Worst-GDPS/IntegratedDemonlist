@@ -30,15 +30,9 @@ CCScene* IDListLayer::scene() {
     return ret;
 }
 
-bool pemonlistEnabled = false;
-constexpr std::string_view aredlInfo =
-    "The <cg>All Rated Extreme Demons List</c> (<cg>AREDL</c>) is an <cp>unofficial ranking</c> "
-    "of all rated <cj>classic mode</c> <cr>extreme demons</c> in Geometry Dash.\n"
-    "It is managed by <cy>C6Carbon</c> and <cy>Padahk</c>.";
-constexpr std::string_view pemonlistInfo =
-    "The <cg>Pemonlist</c> is an <cp>unofficial ranking</c> of the top 150 <cj>platformer mode</c> <cr>demons</c> in Geometry Dash.\n"
-    "It is managed by <cy>camila314</c>, <cy>Extatica</c>, <cy>IvanCrafter026</c>, <cy>Megu</c>, <cy>Voiddle</c>, "
-    "<cy>FakeHATETAG</c>, and <cy>Enzo1141</c>.";
+constexpr std::string_view demonlistInfo =
+    "This Demonlist integration is powered by a custom external API.\n"
+    "It displays demon placement and metadata for the configured demon list source.";
 
 bool IDListLayer::init() {
     if (!CCLayer::init()) return false;
@@ -75,7 +69,7 @@ bool IDListLayer::init() {
     m_countLabel->setID("level-count-label");
     addChild(m_countLabel);
 
-    m_list = GJListLayer::create(nullptr, pemonlistEnabled ? "Pemonlist" : "All Rated Extreme Demons List", { 0, 0, 0, 180 }, 356.0f, 220.0f, 0);
+    m_list = GJListLayer::create(nullptr, "Demonlist", { 0, 0, 0, 180 }, 356.0f, 220.0f, 0);
     m_list->setPosition(winSize / 2.0f - m_list->getContentSize() / 2.0f);
     m_list->setID("GJListLayer");
     addChild(m_list, 2);
@@ -134,19 +128,13 @@ bool IDListLayer::init() {
     m_rightButton->setID("next-page-button");
     menu->addChild(m_rightButton);
 
-    m_infoButton = InfoAlertButton::create(pemonlistEnabled ? "Pemonlist" : "All Rated Extreme Demons List",
-        pemonlistEnabled ? gd::string(pemonlistInfo.data(), pemonlistInfo.size()) : gd::string(aredlInfo.data(), aredlInfo.size()), 1.0f);
+    m_infoButton = InfoAlertButton::create("Demonlist", gd::string(demonlistInfo.data(), demonlistInfo.size()), 1.0f);
     m_infoButton->setPosition({ 30.0f, 30.0f });
     m_infoButton->setID("info-button");
     menu->addChild(m_infoButton, 2);
 
-    m_aredlFailure = [this](int code) {
-        FLAlertLayer::create(fmt::format("Load Failed ({})", code).c_str(), "Failed to load AREDL. Please try again later.", "OK")->show();
-        m_loadingCircle->setVisible(false);
-    };
-
-    m_pemonlistFailure = [this](int code) {
-        FLAlertLayer::create(fmt::format("Load Failed ({})", code).c_str(), "Failed to load Pemonlist. Please try again later.", "OK")->show();
+    m_failure = [this](int code) {
+        FLAlertLayer::create(fmt::format("Load Failed ({})", code).c_str(), "Failed to load the Demonlist. Please try again later.", "OK")->show();
         m_loadingCircle->setVisible(false);
     };
 
@@ -155,22 +143,6 @@ bool IDListLayer::init() {
     refreshButton->setPosition({ winSize.width - refreshBtnSpr->getContentWidth() / 2.0f - 4.0f, refreshBtnSpr->getContentHeight() / 2.0f + 4.0f });
     refreshButton->setID("refresh-button");
     menu->addChild(refreshButton, 2);
-
-    auto starSprite = CCSprite::createWithSpriteFrameName("GJ_starsIcon_001.png");
-    starSprite->setScale(1.1f);
-    m_starToggle = CCMenuItemSpriteExtra::create(starSprite, this, menu_selector(IDListLayer::onStar));
-    m_starToggle->setPosition({ 30.0f, 60.0f });
-    m_starToggle->setColor(pemonlistEnabled ? ccColor3B { 125, 125, 125 } : ccColor3B { 255, 255, 255 });
-    m_starToggle->setID("aredl-button");
-    menu->addChild(m_starToggle, 2);
-
-    auto moonSprite = CCSprite::createWithSpriteFrameName("GJ_moonsIcon_001.png");
-    moonSprite->setScale(1.1f);
-    m_moonToggle = CCMenuItemSpriteExtra::create(moonSprite, this, menu_selector(IDListLayer::onMoon));
-    m_moonToggle->setPosition({ 60.0f, 60.0f });
-    m_moonToggle->setColor(pemonlistEnabled ? ccColor3B { 255, 255, 255 } : ccColor3B { 125, 125, 125 });
-    m_moonToggle->setID("pemonlist-button");
-    menu->addChild(m_moonToggle, 2);
 
     auto pageBtnSpr = CCSprite::create("GJ_button_02.png");
     pageBtnSpr->setScale(0.7f);
@@ -228,21 +200,13 @@ bool IDListLayer::init() {
     setKeypadEnabled(true);
     setKeyboardEnabled(true);
 
-    if (pemonlistEnabled && IntegratedDemonlist::pemonlistLoaded) {
-        populateList("");
-    }
-    else if (pemonlistEnabled) {
-        IntegratedDemonlist::loadPemonlist(m_pemonlistListener, [this] {
-            populateList("");
-        }, m_pemonlistFailure);
-    }
-    else if (IntegratedDemonlist::aredlLoaded) {
+    if (IntegratedDemonlist::demonlistLoaded) {
         populateList("");
     }
     else {
-        IntegratedDemonlist::loadAREDL(m_aredlListener, [this] {
+        IntegratedDemonlist::loadDemonlist(m_listener, [this] {
             populateList("");
-        }, m_aredlFailure);
+        }, m_failure);
     }
 
     return true;
@@ -262,63 +226,11 @@ void IDListLayer::onNextPage(CCObject* sender) {
 
 void IDListLayer::onRefresh(CCObject* sender) {
     showLoading();
-    if (pemonlistEnabled) {
-        IntegratedDemonlist::loadPemonlist(m_pemonlistListener, [this] {
-            populateList(m_query);
-        }, m_pemonlistFailure);
-    }
-    else {
-        IntegratedDemonlist::loadAREDL(m_aredlListener, [this] {
-            populateList(m_query);
-        }, m_aredlFailure);
-    }
+    IntegratedDemonlist::loadDemonlist(m_listener, [this] {
+        populateList(m_query);
+    }, m_failure);
 }
 
-void IDListLayer::onStar(CCObject* sender) {
-    if (!pemonlistEnabled) return;
-    pemonlistEnabled = false;
-    m_starToggle->setColor({ 255, 255, 255 });
-    m_moonToggle->setColor({ 125, 125, 125 });
-    showLoading();
-    if (auto listTitle = static_cast<CCLabelBMFont*>(m_list->getChildByID("title"))) {
-        listTitle->setString("All Rated Extreme Demons List");
-        listTitle->limitLabelWidth(280.0f, 0.8f, 0.0f);
-    }
-    m_infoButton->m_title = "All Rated Extreme Demons List";
-    m_infoButton->m_description = gd::string(aredlInfo.data(), aredlInfo.size());
-    m_fullSearchResults.clear();
-    if (IntegratedDemonlist::aredlLoaded) {
-        page(0);
-    }
-    else {
-        IntegratedDemonlist::loadAREDL(m_aredlListener, [this] {
-            page(0);
-        }, m_aredlFailure);
-    }
-}
-
-void IDListLayer::onMoon(CCObject* sender) {
-    if (pemonlistEnabled) return;
-    pemonlistEnabled = true;
-    m_starToggle->setColor({ 125, 125, 125 });
-    m_moonToggle->setColor({ 255, 255, 255 });
-    showLoading();
-    if (auto listTitle = static_cast<CCLabelBMFont*>(m_list->getChildByID("title"))) {
-        listTitle->setString("Pemonlist");
-        listTitle->limitLabelWidth(280.0f, 0.8f, 0.0f);
-    }
-    m_infoButton->m_title = "Pemonlist";
-    m_infoButton->m_description = gd::string(pemonlistInfo.data(), pemonlistInfo.size());
-    m_fullSearchResults.clear();
-    if (IntegratedDemonlist::pemonlistLoaded) {
-        page(0);
-    }
-    else {
-        IntegratedDemonlist::loadPemonlist(m_pemonlistListener, [this] {
-            page(0);
-        }, m_pemonlistFailure);
-    }
-}
 
 void IDListLayer::onPage(CCObject* sender) {
     auto popup = SetIDPopup::create(m_page + 1, 1, (m_fullSearchResults.size() + 9) / 10, "Go to Page", "Go", true, 1, 60.0f, false, false);
@@ -356,14 +268,14 @@ void IDListLayer::populateList(const std::string& query) {
     m_fullSearchResults.clear();
     auto searchSprite = static_cast<CCSprite*>(m_searchButton->getNormalImage());
     if (query.empty()) {
-        for (auto& level : pemonlistEnabled ? IntegratedDemonlist::pemonlist : IntegratedDemonlist::aredl) {
+        for (auto& level : IntegratedDemonlist::demonlist) {
             m_fullSearchResults.push_back(fmt::to_string(level.id));
         }
         searchSprite->setDisplayFrame(CCSpriteFrameCache::get()->spriteFrameByName("gj_findBtn_001.png"));
     }
     else {
         auto lowerQuery = string::toLower(query);
-        for (auto& level : pemonlistEnabled ? IntegratedDemonlist::pemonlist : IntegratedDemonlist::aredl) {
+        for (auto& level : IntegratedDemonlist::demonlist) {
             if (!string::toLower(level.name).contains(lowerQuery)) continue;
             m_fullSearchResults.push_back(fmt::to_string(level.id));
         }
@@ -437,18 +349,10 @@ void IDListLayer::onSearch(CCObject* sender) {
     auto query = m_searchBar->getString();
     if (m_query != query) {
         showLoading();
-        if (pemonlistEnabled) {
-            IntegratedDemonlist::loadPemonlist(m_pemonlistListener, [this, query] {
-                m_page = 0;
-                populateList(query);
-            }, m_pemonlistFailure);
-        }
-        else {
-            IntegratedDemonlist::loadAREDL(m_aredlListener, [this, query] {
-                m_page = 0;
-                populateList(query);
-            }, m_aredlFailure);
-        }
+        IntegratedDemonlist::loadDemonlist(m_listener, [this, query] {
+            m_page = 0;
+            populateList(query);
+        }, m_failure);
     }
 }
 

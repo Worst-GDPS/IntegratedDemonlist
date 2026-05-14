@@ -14,8 +14,7 @@ public:
 
     ~IDListLayer() override;
 protected:
-    geode::async::TaskHolder<geode::utils::web::WebResponse> m_aredlListener;
-    geode::async::TaskHolder<geode::utils::web::WebResponse> m_pemonlistListener;
+    geode::async::TaskHolder<geode::utils::web::WebResponse> m_listener;
     GJListLayer* m_list;
     cocos2d::CCLabelBMFont* m_listLabel;
     LoadingCircle* m_loadingCircle;
@@ -30,14 +29,11 @@ protected:
     CCMenuItemSpriteExtra* m_randomButton;
     CCMenuItemSpriteExtra* m_firstButton;
     CCMenuItemSpriteExtra* m_lastButton;
-    CCMenuItemSpriteExtra* m_starToggle;
-    CCMenuItemSpriteExtra* m_moonToggle;
     CCMenuItemSpriteExtra* m_searchButton;
     int m_page = 0;
     std::string m_query;
     std::vector<std::string> m_fullSearchResults;
-    geode::CopyableFunction<void(int)> m_aredlFailure;
-    geode::CopyableFunction<void(int)> m_pemonlistFailure;
+    geode::CopyableFunction<void(int)> m_failure;
 
     bool init() override;
     void onSearch(cocos2d::CCObject*);
@@ -45,8 +41,6 @@ protected:
     void onPrevPage(cocos2d::CCObject*);
     void onNextPage(cocos2d::CCObject*);
     void onRefresh(cocos2d::CCObject*);
-    void onStar(cocos2d::CCObject*);
-    void onMoon(cocos2d::CCObject*);
     void onPage(cocos2d::CCObject*);
     void onRandom(cocos2d::CCObject*);
     void onFirst(cocos2d::CCObject*);

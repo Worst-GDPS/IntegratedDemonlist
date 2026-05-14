@@ -1,4 +1,4 @@
-#include "../classes/IDPackLayer.hpp"
+#include "../classes/IDListLayer.hpp"
 #include <Geode/binding/GJSearchObject.hpp>
 #include <Geode/modify/LevelBrowserLayer.hpp>
 #include <Geode/ui/BasedButtonSprite.hpp>
@@ -27,6 +27,6 @@ class $modify(IDLevelBrowserLayer, LevelBrowserLayer) {
     }
 
     void onDemonlistPacks(CCObject* sender) {
-        CCDirector::get()->pushScene(CCTransitionFade::create(0.5f, IDPackLayer::scene()));
+        CCDirector::get()->pushScene(CCTransitionFade::create(0.5f, IDListLayer::scene()));
     }
 };
