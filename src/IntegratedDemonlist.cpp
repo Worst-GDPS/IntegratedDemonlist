@@ -43,7 +43,7 @@ void IntegratedDemonlist::loadDemonlist(TaskHolder<web::WebResponse>& listener, 
                 auto mainid = item.get<std::string>("mainid");
                 auto legacy = item.get<bool>("legacy");
 
-                IDListDemon demon(levelID.unwrap(), position.unwrap(), std::move(name).unwrap());
+                IDListDemon demon(levelID, position.unwrap(), std::move(name).unwrap());
                 demon.creator = creator.isOk() ? std::move(creator).unwrap() : std::string();
                 demon.ytlink = ytlink.isOk() ? std::move(ytlink).unwrap() : std::string();
                 demon.verifier = verifier.isOk() ? std::move(verifier).unwrap() : std::string();
