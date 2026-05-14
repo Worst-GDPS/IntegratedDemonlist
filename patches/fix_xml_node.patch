@@ -1,0 +1,4 @@
+# Fix for Geode bindings xml_node destructor issue
+# This patches the bindings source to remove the problematic destructor definition
+
+sed -i '/pugi::xml_node::~xml_node() {/,/}/d' build/_deps/bindings-src/bindings/2.2081/inline/xml_node.cpp
