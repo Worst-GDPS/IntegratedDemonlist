@@ -31,7 +31,11 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME} jasmine-tools)
 
-# Fix for pugi::xml_node destructor issue on Android
-target_compile_options(${PROJECT_NAME} PRIVATE -Wno-error=dtor-name)
+# Fix for pugi::xml_node destructor issue
+# Suppress the dtor-name warning for implicitly declared destructors in pugixml bindings
+target_compile_options(${PROJECT_NAME} PRIVATE
+    -Wno-dtor-name
+    -Wno-error=dtor-name
+)
 
 setup_geode_mod(${PROJECT_NAME})
