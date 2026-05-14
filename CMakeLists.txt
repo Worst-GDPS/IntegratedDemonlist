@@ -7,23 +7,9 @@ else()
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
 endif()
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(GEODE_DISABLE_PRECOMPILED_HEADERS ON)
+set(CMAKE_DISABLE_PRECOMPILED_HEADERS ON)
 
 project(IntegratedDemonlist VERSION 1.7.13)
-
-# Apply patch for xml_node destructor issue
-execute_process(
-    COMMAND bash -c "if [ -f patches/fix_xml_node.patch ]; then bash patches/fix_xml_node.patch; fi"
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
-list(REMOVE_ITEM SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/classes/IDPackLayer.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/classes/IDPackCell.cpp
-)
-
-add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")
@@ -33,7 +19,22 @@ endif()
 
 add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
+# Apply patch for xml_node destructor issue after Geode SDK is added
+execute_process(
+    COMMAND bash -c "if [ -f ${CMAKE_CURRENT_SOURCE_DIR}/patches/fix_xml_node.patch ]; then bash ${CMAKE_CURRENT_SOURCE_DIR}/patches/fix_xml_node.patch; fi"
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)
+
 CPMAddPackage("gh:hiimjasmine00/jasmine-tools@1.5.0")
+
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
+list(REMOVE_ITEM SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/classes/IDPackLayer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/classes/IDPackCell.cpp
+)
+
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
+
 target_link_libraries(${PROJECT_NAME} jasmine-tools)
 
 setup_geode_mod(${PROJECT_NAME})
