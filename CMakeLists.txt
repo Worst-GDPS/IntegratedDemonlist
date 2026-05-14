@@ -19,13 +19,13 @@ endif()
 
 add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
-# Apply patch for xml_node destructor issue after Geode SDK is added
+CPMAddPackage("gh:hiimjasmine00/jasmine-tools@1.5.0")
+
+# Apply patch for xml_node destructor issue after CPM downloads the bindings.
 execute_process(
     COMMAND bash -c "if [ -f ${CMAKE_CURRENT_SOURCE_DIR}/patches/fix_xml_node.patch ]; then bash ${CMAKE_CURRENT_SOURCE_DIR}/patches/fix_xml_node.patch; fi"
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
-
-CPMAddPackage("gh:hiimjasmine00/jasmine-tools@1.5.0")
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 list(REMOVE_ITEM SOURCES

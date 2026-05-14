@@ -1,9 +1,9 @@
 # Fix for Geode bindings xml_node destructor issue
 # This patches the bindings source to remove the problematic destructor definition
 
-FILE="build/_deps/bindings-src/bindings/2.2081/inline/xml_node.cpp"
+FILE="$PWD/_deps/bindings-src/bindings/2.2081/inline/xml_node.cpp"
 if [ -f "$FILE" ]; then
-    python3 "$FILE" <<'PY'
+    python3 - "$FILE" <<'PY'
 from pathlib import Path
 import sys
 path = Path(sys.argv[1])
