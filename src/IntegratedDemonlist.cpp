@@ -43,12 +43,11 @@ void IntegratedDemonlist::loadDemonlist(TaskHolder<web::WebResponse>& listener, 
                 auto mainid = item.get<std::string>("mainid");
                 auto legacy = item.get<bool>("legacy");
 
-                IDListDemon demon(levelID, position.unwrap(), std::move(name).unwrap());
+                IDListDemon demon(levelID, position.unwrap(), legacy.isOk() && legacy.unwrap(), std::move(name).unwrap());
                 demon.creator = creator.isOk() ? std::move(creator).unwrap() : std::string();
                 demon.ytlink = ytlink.isOk() ? std::move(ytlink).unwrap() : std::string();
                 demon.verifier = verifier.isOk() ? std::move(verifier).unwrap() : std::string();
                 demon.mainid = mainid.isOk() ? std::move(mainid).unwrap() : std::string();
-                demon.legacy = legacy.isOk() && legacy.unwrap();
 
                 if (demon.legacy) continue;
 
