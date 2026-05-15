@@ -9,7 +9,7 @@ bool IntegratedDemonlist::demonlistLoaded = false;
 
 void IntegratedDemonlist::loadDemonlist(TaskHolder<web::WebResponse>& listener, Function<void()> success, CopyableFunction<void(int)> failure) {
     listener.spawn(
-        web::WebRequest().get("https://146.59.93.5/demonlist/levelapi.php"),
+        web::WebRequest().get("https://146.59.93.5/demonlist/api/levels.php"),
         [failure = std::move(failure), success = std::move(success)](web::WebResponse res) mutable {
             if (!res.ok()) return failure(res.code());
 
