@@ -7,10 +7,10 @@
         "ios": "2.2081"
     },
     "version": "v1.7.13",
-    "id": "reject.integrated_wordl",
-    "name": "Integrated WorDL",
+    "id": "reject.integrated_wgdpsdl",
+    "name": "Integrated WGDPSDL",
     "developer": "reject",
-    "description": "Simple WorDL integration.",
+    "description": "Simple WGDPSDL integration.",
     "resources": {
         "files": [
             "resources/*.frag",
