@@ -13,9 +13,7 @@ jobs:
       matrix:
         config:
         - name: Windows
-          os: ubuntu-latest
-          target: Win64
-          build-config: RelWithDebInfo
+          os: windows-latest
 
         - name: macOS
           os: macos-latest
