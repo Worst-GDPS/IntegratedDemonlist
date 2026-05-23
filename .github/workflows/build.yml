@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "master"
+      - "**"
 
 jobs:
   build:
@@ -13,7 +13,9 @@ jobs:
       matrix:
         config:
         - name: Windows
-          os: windows-latest
+          os: ubuntu-latest
+          target: Win64
+          build-config: RelWithDebInfo
 
         - name: macOS
           os: macos-latest
@@ -36,13 +38,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Update LLVM Windows
-        run: choco upgrade llvm
-        if: matrix.config.os == 'windows-latest'
-
       - name: Build the mod
-        uses: geode-sdk/build-geode-mod@main
+        uses: hiimjasmine00/build-geode-mod@xwin
         with:
+          build-config: ${{ matrix.config.build-config || 'Release' }}
+          export-pdb: true
+          export-symbols: true
           combine: true
           target: ${{ matrix.config.target }}
 
