@@ -11,7 +11,12 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 project(IntegratedWGDPSDL VERSION 1.0.0)
 
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
+file(GLOB SOURCES
+	src/*.cpp src/*.h src/*/*.cpp src/*/*.h src/*/*/*.cpp src/*/*/*.h
+)
+
+include_directories(src)
+
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
