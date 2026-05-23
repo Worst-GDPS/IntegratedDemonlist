@@ -41,7 +41,7 @@ jobs:
         if: matrix.config.os == 'windows-latest'
 
       - name: Build the mod
-        uses: hiimjasmine00/build-geode-mod@xwin
+        uses: geode-sdk/build-geode-mod@main
         with:
           build-config: ${{ matrix.config.build-config || 'Release' }}
           export-pdb: true
